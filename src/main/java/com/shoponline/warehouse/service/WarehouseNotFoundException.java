@@ -1,8 +1,8 @@
-package com.shoponline.warehouse;
+package com.shoponline.warehouse.service;
 
 class WarehouseItemNotFoundException extends RuntimeException {
 
-    WarehouseItemNotFoundException(Long id) {
+    public WarehouseItemNotFoundException(Long id) {
         super("Could not find item by " + id);
     }
 

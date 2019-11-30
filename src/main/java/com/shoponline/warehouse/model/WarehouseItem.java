@@ -50,4 +50,10 @@ public class WarehouseItem {
         this.price = price;
         this.amount = amount;
     }
+
+    @Override
+    public String toString() {
+        return "Item [name=" + name + ", id=" + id + ", amount=" + amount + "]";
+    }
+
 }
