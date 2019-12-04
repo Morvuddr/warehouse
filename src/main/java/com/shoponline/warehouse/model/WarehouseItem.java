@@ -43,7 +43,7 @@ public class WarehouseItem {
     private String name;
     private Integer price;
 
-    WarehouseItem() {}
+    public WarehouseItem() {}
 
     public WarehouseItem(String name, Integer price, Integer amount) {
         this.name = name;

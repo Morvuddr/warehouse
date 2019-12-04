@@ -1,14 +1,23 @@
 package com.shoponline.warehouse.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shoponline.warehouse.broker.RabbitMQ;
+import com.shoponline.warehouse.dtos.ReservedItemDTO;
+import com.shoponline.warehouse.dtos.WarehouseItemDTO;
+import com.shoponline.warehouse.model.ReservedItem;
 import com.shoponline.warehouse.model.WarehouseItem;
 import com.shoponline.warehouse.model.WarehouseRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @EnableRabbit
 @Service
@@ -21,9 +30,11 @@ public class WarehouseService {
     private final WarehouseRepository repository;
 
     private final Logger logger;
+    private final ObjectMapper objectMapper;
 
-    WarehouseService(WarehouseRepository repository) {
+    WarehouseService(WarehouseRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
+        this.objectMapper = objectMapper;
         this.logger = LoggerFactory.getLogger(WarehouseService.class);
     }
 
@@ -50,24 +61,34 @@ public class WarehouseService {
         return repository.findById(id)
                 .map(warehouseItem -> {
                     warehouseItem.setAmount(warehouseItem.getAmount() + amount);
+                    this.send(warehouseItem);
                     return repository.save(warehouseItem);
                 })
                 .orElseThrow(() -> new WarehouseItemNotFoundException(id));
     }
 
     private void send(WarehouseItem item) {
-        rabbitMQTemplate.convertAndSend("warehouse.exchange", "warehouse.routingkey", item);
-        System.out.println("Send msg = " + item);
+        WarehouseItemDTO itemDTO = new WarehouseItemDTO(item.getId(), item.getAmount(), item.getName(), item.getPrice());
+        Message m = MessageBuilder.withBody(itemDTO.toString().getBytes()).build();
+        rabbitMQTemplate.send(RabbitMQ.WAREHOUSE_EXCHANGE, RabbitMQ.WAREHOUSE_ROUTING_KEY, m);
+        logger.info("----> Send message to rabbit with item {} ", item.getId());
     }
 
-    @RabbitListener(queues = "reserveitem.queue")
-    private void reserveItem(WarehouseItem message) {
-        System.out.println(" [x] Received '" + message.toString() + "'");
+    @RabbitListener(queues = RabbitMQ.WAREHOUSE_QUEUE_RESERVE_ITEMS)
+    private void reserveItem(byte[] bytes) {
+        String json = new String(bytes);
+        ReservedItemDTO item;
+        try {
+            item = objectMapper.readValue(json, ReservedItemDTO.class);
+            logger.info("----> Received '" + item.toString() + "'");
+        } catch (IOException e) {
+            logger.info("----> Error" + e.getLocalizedMessage());
+        }
     }
-
-    @RabbitListener(queues = "orderstatus.queue")
-    private void changeItemStatus(WarehouseItem message) {
-        System.out.println(" [x] Received '" + message.toString() + "'");
-    }
+//
+//    @RabbitListener(queues = RabbitMQ.WAREHOUSE_QUEUE_STATUS)
+//    private void changeOrgerStatus(String message) {
+//        System.out.println(" [x] Received '" + message + "'");
+//    }
 
 }
