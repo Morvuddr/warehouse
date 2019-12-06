@@ -1,7 +1,7 @@
 package com.shoponline.warehouse.controller;
 
 import com.shoponline.warehouse.service.WarehouseService;
-import com.shoponline.warehouse.model.WarehouseItem;
+import com.shoponline.warehouse.model.warehouse.WarehouseItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,12 +27,12 @@ class WarehouseController {
     }
 
     @GetMapping("/items/{id}")
-    public WarehouseItem one(@PathVariable Long id) {
+    public WarehouseItem one(@PathVariable Integer id) {
         return service.getItem(id);
     }
 
     @PutMapping("/items/{id}/addition/{amount}")
-    public WarehouseItem addExistingWarehouseItem(@PathVariable Long id, @PathVariable Integer amount) {
+    public WarehouseItem addExistingWarehouseItem(@PathVariable Integer id, @PathVariable Integer amount) {
         return service.addExistingItem(id, amount);
     }
 

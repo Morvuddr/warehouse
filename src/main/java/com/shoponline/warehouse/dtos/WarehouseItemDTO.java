@@ -4,14 +4,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 public class WarehouseItemDTO implements Serializable {
-    public Long itemId;
+    public Integer itemId;
     public Integer amount;
     public String name;
-    public Integer price;
+    public BigDecimal price;
 
     public WarehouseItemDTO () {}
 
-    public WarehouseItemDTO(Long itemId, Integer amount, String name, Integer price) {
+    public WarehouseItemDTO(Integer itemId, Integer amount, String name, BigDecimal price) {
         this.itemId = itemId;
         this.amount = amount;
         this.name = name;

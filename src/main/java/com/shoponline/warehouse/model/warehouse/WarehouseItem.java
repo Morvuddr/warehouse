@@ -1,6 +1,7 @@
-package com.shoponline.warehouse.model;
+package com.shoponline.warehouse.model.warehouse;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 public class WarehouseItem {
@@ -13,11 +14,11 @@ public class WarehouseItem {
         this.amount = amount;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -29,23 +30,23 @@ public class WarehouseItem {
         this.name = name;
     }
 
-    public Integer getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Integer price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
-    private @GeneratedValue @Id Long id;
+    private @GeneratedValue @Id Integer id;
 
     private Integer amount;
     private String name;
-    private Integer price;
+    private BigDecimal price;
 
     public WarehouseItem() {}
 
-    public WarehouseItem(String name, Integer price, Integer amount) {
+    public WarehouseItem(String name, BigDecimal price, Integer amount) {
         this.name = name;
         this.price = price;
         this.amount = amount;

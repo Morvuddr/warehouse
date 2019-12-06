@@ -1,4 +1,4 @@
-package com.shoponline.warehouse.model;
+package com.shoponline.warehouse.model.reserved;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -7,10 +7,22 @@ import java.io.Serializable;
 @IdClass(ReservedItemID.class)
 @Entity
 public class ReservedItem implements Serializable {
-    @Id
-    private Integer itemId;
-    @Id
-    private Integer orderId;
+
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
+    }
+
+    public Integer getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Integer orderId) {
+        this.orderId = orderId;
+    }
 
     public Integer getAmount() {
         return amount;
@@ -28,6 +40,10 @@ public class ReservedItem implements Serializable {
         this.status = status;
     }
 
+    @Id
+    private Integer itemId;
+    @Id
+    private Integer orderId;
     private Integer amount;
     private ReservedItemStatus status;
 
