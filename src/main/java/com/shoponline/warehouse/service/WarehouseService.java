@@ -70,7 +70,7 @@ public class WarehouseService {
         logger.info("----> Send message to rabbit with item {} ", item.getId());
     }
 
-    @RabbitListener(queues = RabbitMQ.WAREHOUSE_QUEUE_RESERVE_ITEMS)
+    @RabbitListener(queues = RabbitMQ.WAREHOUSE_QUEUE_RESERVE_ITEMS, errorHandler = "rabbitRetryHandler")
     private void reserveItem(byte[] bytes) {
         String json = new String(bytes);
         try {
