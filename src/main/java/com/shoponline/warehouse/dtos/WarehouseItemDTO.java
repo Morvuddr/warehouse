@@ -23,7 +23,7 @@ public class WarehouseItemDTO implements Serializable {
         return "{" +
                 "\"ItemId\":" + itemId +
                 ", \"Amount\":" + amount +
-                ", \"Name:\":\"" + name + '\"' +
+                ", \"Name\":\"" + name + '\"' +
                 ", \"Price\":" + price +
                 '}';
     }

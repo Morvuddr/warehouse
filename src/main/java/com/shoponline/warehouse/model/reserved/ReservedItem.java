@@ -53,6 +53,7 @@ public class ReservedItem implements Serializable {
         this.itemId = itemId;
         this.orderId = orderId;
         this.amount = amount;
+        this.status = ReservedItemStatus.COLLECTING;
     }
 
     @Override

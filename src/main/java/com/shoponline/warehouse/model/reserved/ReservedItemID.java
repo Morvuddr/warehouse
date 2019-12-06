@@ -9,6 +9,8 @@ public class ReservedItemID implements Serializable {
     private Integer itemId;
     private Integer orderId;
 
+    public ReservedItemID() {}
+
     public ReservedItemID(Integer itemId, Integer orderId) {
         this.itemId = itemId;
         this.orderId = orderId;
