@@ -63,33 +63,6 @@ public class WarehouseService {
                 .orElseThrow(() -> new WarehouseItemNotFoundException(id));
     }
 
-    @Transactional
-    public WarehouseItem addExistingItem(Integer id, Integer amount) {
-        logger.info("----> Change item {} amount by {}", id, amount);
-        return warehouseRepository.findById(id)
-                .map(warehouseItem -> {
-                    warehouseItem.setAmount(warehouseItem.getAmount() + amount);
-                    this.send(warehouseItem);
-                    return warehouseRepository.save(warehouseItem);
-                })
-                .orElseThrow(() -> new WarehouseItemNotFoundException(id));
-    }
-
-    @Transactional
-    void reserveItem(ReservedItem reservedItem) {
-        WarehouseItem warehouseItem = warehouseRepository
-                .findById(reservedItem.getItemId())
-                .orElseThrow(() -> new WarehouseItemNotFoundException(reservedItem.getItemId()));
-        warehouseItem.setAmount(warehouseItem.getAmount() - reservedItem.getAmount());
-        warehouseRepository.save(warehouseItem);
-        reservedItemsRepository.save(reservedItem);
-    }
-
-    @Transactional
-    void changeReservedItemStatus(Integer itemId, ReservedItemStatus status) {
-
-    }
-
     private void send(WarehouseItem item) {
         WarehouseItemDTO itemDTO = new WarehouseItemDTO(item.getId(), item.getAmount(), item.getName(), item.getPrice());
         Message m = MessageBuilder.withBody(itemDTO.toString().getBytes()).build();
@@ -116,10 +89,48 @@ public class WarehouseService {
         System.out.println(json);
         try {
             ChangeStatusDTO dto = objectMapper.readValue(json, ChangeStatusDTO.class);
+            changeReservedItemStatus(dto.OrderId, dto.Status);
             logger.info("----> Received '" + dto.toString() + "'");
         } catch (IOException e) {
             logger.info("----> Error" + e.getLocalizedMessage());
         }
+    }
+
+    //@Transactional
+    public WarehouseItem addExistingItem(Integer id, Integer amount) {
+        logger.info("----> Change item {} amount by {}", id, amount);
+        return warehouseRepository.findById(id)
+                .map(warehouseItem -> {
+                    warehouseItem.setAmount(warehouseItem.getAmount() + amount);
+                    this.send(warehouseItem);
+                    return warehouseRepository.save(warehouseItem);
+                })
+                .orElseThrow(() -> new WarehouseItemNotFoundException(id));
+    }
+
+    //@Transactional
+    void reserveItem(ReservedItem reservedItem) {
+        WarehouseItem warehouseItem = warehouseRepository
+                .findById(reservedItem.getItemId())
+                .orElseThrow(() -> new WarehouseItemNotFoundException(reservedItem.getItemId()));
+        warehouseItem.setAmount(warehouseItem.getAmount() - reservedItem.getAmount());
+        warehouseRepository.save(warehouseItem);
+        reservedItemsRepository.save(reservedItem);
+    }
+
+    //@Transactional
+    void changeReservedItemStatus(Integer orderId, String status) {
+        ReservedItemStatus newStatus = ReservedItemStatus.getEnumByString(status);
+        reservedItemsRepository.findAllByOrderId(orderId).forEach(reservedItem -> {
+            reservedItem.setStatus(newStatus);
+            if (newStatus == ReservedItemStatus.FAILED || newStatus == ReservedItemStatus.CANCELLED) {
+                warehouseRepository.findById(reservedItem.getItemId())
+                        .map(warehouseItem -> {
+                            warehouseItem.setAmount(warehouseItem.getAmount() + reservedItem.getAmount());
+                            return warehouseRepository.save(warehouseItem);
+                        });
+            }
+        });
     }
 
 }
