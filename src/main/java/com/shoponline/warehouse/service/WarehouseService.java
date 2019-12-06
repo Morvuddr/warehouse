@@ -86,7 +86,6 @@ public class WarehouseService {
     @RabbitListener(queues = RabbitMQ.WAREHOUSE_QUEUE_STATUS, errorHandler = "rabbitRetryHandler")
     private void changeOrderStatus(byte[] bytes) {
         String json = new String(bytes);
-        System.out.println(json);
         try {
             ChangeStatusDTO dto = objectMapper.readValue(json, ChangeStatusDTO.class);
             changeReservedItemStatus(dto.OrderId, dto.Status);
@@ -123,6 +122,7 @@ public class WarehouseService {
         ReservedItemStatus newStatus = ReservedItemStatus.getEnumByString(status);
         reservedItemsRepository.findAllByOrderId(orderId).forEach(reservedItem -> {
             reservedItem.setStatus(newStatus);
+            reservedItemsRepository.save(reservedItem);
             if (newStatus == ReservedItemStatus.FAILED || newStatus == ReservedItemStatus.CANCELLED) {
                 warehouseRepository.findById(reservedItem.getItemId())
                         .map(warehouseItem -> {
