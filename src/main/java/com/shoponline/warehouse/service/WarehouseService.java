@@ -6,6 +6,7 @@ import com.shoponline.warehouse.dtos.ChangeStatusDTO;
 import com.shoponline.warehouse.dtos.ReservedItemDTO;
 import com.shoponline.warehouse.dtos.WarehouseItemDTO;
 import com.shoponline.warehouse.model.reserved.ReservedItem;
+import com.shoponline.warehouse.model.reserved.ReservedItemID;
 import com.shoponline.warehouse.model.reserved.ReservedItemStatus;
 import com.shoponline.warehouse.model.reserved.ReservedItemsRepository;
 import com.shoponline.warehouse.model.warehouse.WarehouseItem;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.Optional;
 
 @EnableRabbit
 @Service
@@ -114,7 +116,11 @@ public class WarehouseService {
                 .orElseThrow(() -> new WarehouseItemNotFoundException(reservedItem.getItemId()));
         warehouseItem.setAmount(warehouseItem.getAmount() - reservedItem.getAmount());
         warehouseRepository.save(warehouseItem);
-        reservedItemsRepository.save(reservedItem);
+        Optional<ReservedItem> ri = reservedItemsRepository.findById(new ReservedItemID(reservedItem.getItemId(), reservedItem.getItemId()));
+        ri.ifPresentOrElse(i -> {
+            i.setAmount(i.getAmount() + reservedItem.getAmount());
+            reservedItemsRepository.save(i);
+        }, ()-> reservedItemsRepository.save(reservedItem) );
     }
 
     //@Transactional
