@@ -116,7 +116,7 @@ public class WarehouseService {
                 .orElseThrow(() -> new WarehouseItemNotFoundException(reservedItem.getItemId()));
         warehouseItem.setAmount(warehouseItem.getAmount() - reservedItem.getAmount());
         warehouseRepository.save(warehouseItem);
-        Optional<ReservedItem> ri = reservedItemsRepository.findById(new ReservedItemID(reservedItem.getItemId(), reservedItem.getItemId()));
+        Optional<ReservedItem> ri = reservedItemsRepository.findById(new ReservedItemID(reservedItem.getItemId(), reservedItem.getOrderId()));
         ri.ifPresentOrElse(i -> {
             i.setAmount(i.getAmount() + reservedItem.getAmount());
             reservedItemsRepository.save(i);
